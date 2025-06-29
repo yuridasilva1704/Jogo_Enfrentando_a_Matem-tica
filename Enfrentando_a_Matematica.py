@@ -39,6 +39,7 @@ enemy.grid_x = random.randint(0, TILE_COLS - 1)
 enemy.grid_y = random.randint(0, TILE_ROWS - 1)
 enemy.x = enemy.grid_x * TILE_SIZE + TILE_SIZE // 2
 enemy.y = enemy.grid_y * TILE_SIZE + TILE_SIZE // 2
+enemy.speed = 1.0
 
 enemy.animation_frame = 0
 enemy.animation_timer = 0
@@ -79,6 +80,8 @@ def draw():
 
 def update(dt):
     animate_player(dt)
+    if game_state == 'playing' and not show_question and player_score >= 20:
+        move_enemy_towards_player(dt)
 
 def animate_player(dt):
     if player.moving:
@@ -97,6 +100,14 @@ def animate_player(dt):
         player.image = player_images[int(player.animation_frame % 2)]
         player.animation_frame += 0.5
         player.animation_timer = 0
+
+def move_enemy_towards_player(dt):
+    dx = player.x - enemy.x
+    dy = player.y - enemy.y
+    dist = (dx ** 2 + dy ** 2) ** 0.5
+    if dist > 1:
+        enemy.x += enemy.speed * dx / dist
+        enemy.y += enemy.speed * dy / dist
 
 def lerp(a, b, t):
     return a + (b - a) * t
@@ -257,12 +268,29 @@ def reset_enemy():
     enemy.grid_y = random.randint(0, TILE_ROWS - 1)
     enemy.x = enemy.grid_x * TILE_SIZE + TILE_SIZE // 2
     enemy.y = enemy.grid_y * TILE_SIZE + TILE_SIZE // 2
+    enemy.speed = 1.0
 
 def reset_game():
-    global game_state, player_score, question_counter, player_lives
+    global game_state, player_score, question_counter, player_lives, show_question, feedback, correct_answer, choices, choice_areas
     game_state = 'menu'
     player_score = 0
     question_counter = 0
     player_lives = 3
+    show_question = False
+    feedback = ""
+    correct_answer = ''
+    choices = []
+    choice_areas = []
+    reset_enemy()
+    player.grid_x = TILE_COLS // 2
+    player.grid_y = TILE_ROWS // 2
+    player.x = player.grid_x * TILE_SIZE + TILE_SIZE // 2
+    player.y = player.grid_y * TILE_SIZE + TILE_SIZE // 2
+    player.moving = False
+    player.dx = 0
+    player.dy = 0
+    player.progress = 0.0
+    player.animation_frame = 0
+    player.animation_timer = 0
 
 pgzrun.go()
